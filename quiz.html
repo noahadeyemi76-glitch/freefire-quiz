@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Fire Quiz Dashboard</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #121214; color: #fff; margin: 0; padding: 20px; text-align: center; }
+        .dashboard { max-width: 600px; margin: 30px auto; background: #1a1a1e; padding: 30px; border-radius: 12px; border: 1px solid #ff4a4a; box-shadow: 0 4px 20px rgba(255, 74, 74, 0.2); }
+        h1 { color: #ff4a4a; text-transform: uppercase; letter-spacing: 2px; }
+        .welcome-text { font-size: 18px; margin-bottom: 30px; color: #ccc; }
+        .menu-buttons { display: flex; flex-direction: column; gap: 15px; max-width: 300px; margin: 0 auto; }
+        .btn { padding: 15px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        .btn-quiz { background-color: #ff4a4a; color: white; }
+        .btn-quiz:hover { background-color: #e03e3e; }
+        .btn-leader { background-color: #28a745; color: white; }
+        .btn-leader:hover { background-color: #218838; }
+        
+        /* Modal Payment Screen Styling */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
+        .modal-content { background: #1a1a1e; padding: 30px; border-radius: 10px; max-width: 400px; width: 90%; border: 1px solid #fff; }
+        .bank-box { background: #2d2d35; padding: 15px; border-radius: 6px; margin: 15px 0; font-size: 18px; color: #ffb84d; border-left: 5px solid #ff4a4a; }
+        .file-input { margin: 20px 0; background: #2d2d35; padding: 10px; width: 100%; box-sizing: border-box; color: #fff; border-radius: 4px; }
+        .close-btn { background: #555; color: white; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <h1>Free Fire Quiz Arena</h1>
+    <div class="welcome-text">Survivor Node: <span id="userPhone" style="color: #ffb84d; font-weight: bold;">+234...</span></div>
+    
+    <div class="menu-buttons">
+        <button class="btn btn-quiz" onclick="openPaymentWall()">Take Quiz</button>
+        <button class="btn btn-leader" onclick="alert('Leaderboard coming soon!')">Check Leaderboard</button>
+    </div>
+</div>
+
+<!-- THE SCREENSHOT PAYMENT GATEWAY -->
+<div id="paymentModal" class="modal">
+    <div class="modal-content">
+        <h2>Activation Fee Required</h2>
+        <p>To take Quiz #1, please pay the <strong>&#8358;200</strong> activation fee to the account below:</p>
+        
+        <div class="bank-box">
+            <strong>Bank:</strong> Smartcash PSB<br>
+            <strong>Account:</strong> 1585108930
+        </div>
+        
+        <p style="font-size: 13px; color: #aaa;">Upload your payment receipt screenshot below for manual approval.</p>
+        <input type="file" id="screenshotUpload" class="file-input" accept="image/*">
+        
+        <button class="btn btn-quiz" onclick="submitScreenshot()">Submit Proof</button>
+        <button class="btn close-btn" onclick="closePaymentWall()">Cancel</button>
+    </div>
+</div>
+
+<script>
+    // Visual actions for our dashboard buttons
+    function openPaymentWall() {
+        document.getElementById("paymentModal").style.display = "flex";
+    }
+
+    function closePaymentWall() {
+        document.getElementById("paymentModal").style.display = "none";
+    }
+
+    function submitScreenshot() {
+        const fileInput = document.getElementById("screenshotUpload");
+        if (fileInput.files.length === 0) {
+            alert("Please select a screenshot file first before submitting!");
+            return;
+        }
+        alert("Screenshot submitted successfully! Your payment is under verification.");
+        closePaymentWall();
+    }
+</script>
+
+</body>
+</html>
