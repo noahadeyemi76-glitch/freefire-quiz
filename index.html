@@ -5,14 +5,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz Portal Verification</title>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 380px; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 12px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background-color: #f0f2f5; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh;
+            margin: 0;
+        }
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            width: 100%; 
+            max-width: 380px; 
+            box-sizing: border-box;
+        }
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 12px 0; 
+            border: 1px solid #ccc; 
+            border-radius: 5px; 
+            box-sizing: border-box; 
+            font-size: 16px; 
+        }
+        button { 
+            width: 100%; 
+            padding: 12px; 
+            background-color: #28a745; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            font-size: 16px; 
+            font-weight: bold;
+            cursor: pointer;
+        }
         button:hover { background-color: #218838; }
         .hidden { display: none; }
         #recaptcha-container { margin: 15px 0; display: flex; justify-content: center; }
+        h2 { text-align: center; margin-top: 0; color: #333; }
+        p { color: #666; font-size: 14px; text-align: center; }
     </style>
+
+    <!-- Firebase SDK Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 </head>
 <body>
 
@@ -23,80 +63,79 @@
     <div id="phoneSection">
         <p>Enter your phone number in full international format to receive an access code.</p>
         <input type="tel" id="phoneNumber" placeholder="e.g., +2348012345678">
-        <!-- Firebase reCAPTCHA security container -->
         <div id="recaptcha-container"></div>
         <button onclick="requestOTP()">Send Verification SMS</button>
     </div>
 
-    <!-- STEP 2: Input OTP -->
-    <div id="otpSection" class="hidden">
-        <p>Enter the 6-digit code sent to your phone line.</p>
-        <input type="number" id="otpCode" placeholder="X X X X X X">
-        <button onclick="confirmOTP()">Verify Code & Enter</button>
+    <!-- STEP 2: Input Verification Code -->
+    <div id="codeSection" class="hidden">
+        <p>Enter the 6-digit verification code sent to your phone number.</p>
+        <input type="text" id="verificationCode" placeholder="Enter 6-digit code">
+        <button onclick="verifyOTP()">Verify Code & Login</button>
     </div>
 </div>
 
-<!-- Firebase SDK Scripts (Using v9 Compat Mode) -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-
 <script>
-    // Your exact Firebase setup from the screenshot!
+    // Your web app's Firebase configuration strictly from your console credentials
     const firebaseConfig = {
-        apiKey: "AIzaSyAKCuQZCi9s9SLVOXSHsWwx2clxDHYqt7w",
+        apiKey: "AIzaSyAKCUqZCi9s9SLVOXSHsWwx2clxDHYqt7w",
         authDomain: "freefire-quiz-arena.firebaseapp.com",
         projectId: "freefire-quiz-arena",
         storageBucket: "freefire-quiz-arena.firebasestorage.app",
         messagingSenderId: "1004447878604",
         appId: "1:1004447878604:web:6a54c282821699e8b1a169"
     };
-    
+
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    // Setup the automatic reCAPTCHA verification gate
-    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-        'size': 'invisible'
-    });
+    // Setup invisible reCAPTCHA verifier
+    window.onload = function() {
+        window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+            'size': 'invisible',
+            'callback': (response) => {}
+        });
+    };
 
-    let confirmationResultGlobal = null;
+    let confirmationResultObj = null;
 
-    // Request the SMS code
     function requestOTP() {
-        const phone = document.getElementById("phoneNumber").value.trim();
-        const appVerifier = window.recaptchaVerifier;
-
-        if(!phone.startsWith("+")) {
-            alert("Please start your number with your country code (e.g. +234 for Nigeria)!");
+        const number = document.getElementById('phoneNumber').value.trim();
+        
+        if (!number.startsWith('+')) {
+            alert('Please include your country code starting with + (e.g., +234)');
             return;
         }
 
-        auth.signInWithPhoneNumber(phone, appVerifier)
+        const appVerifier = window.recaptchaVerifier;
+
+        auth.signInWithPhoneNumber(number, appVerifier)
             .then((confirmationResult) => {
-                confirmationResultGlobal = confirmationResult;
-                // Switch the input forms smoothly
-                document.getElementById("phoneSection").classList.add("hidden");
-                document.getElementById("otpSection").classList.remove("hidden");
-                alert("SMS verification code sent successfully!");
+                confirmationResultObj = confirmationResult;
+                document.getElementById('phoneSection').classList.add('hidden');
+                document.getElementById('codeSection').classList.remove('hidden');
+                alert('Verification code sent successfully!');
             }).catch((error) => {
-                alert("Error sending SMS: " + error.message);
+                alert('Error sending SMS: ' + error.message);
+                console.error(error);
             });
     }
 
-    // Check the OTP code the user inputs
-    function confirmOTP() {
-        const code = document.getElementById("otpCode").value.trim();
+    function verifyOTP() {
+        const code = document.getElementById('verificationCode').value.trim();
+        
+        if (code.length !== 6) {
+            alert('Please enter a valid 6-digit code.');
+            return;
+        }
 
-        confirmationResultGlobal.confirm(code)
+        confirmationResultObj.confirm(code)
             .then((result) => {
-                alert("Access Granted!");
-                // Store phone number locally so the quiz dashboard can display it
-                localStorage.setItem("userPhone", result.user.phoneNumber);
-                // Redirect user automatically to the quiz page dashboard
                 window.location.href = "quiz.html";
             }).catch((error) => {
-                alert("Invalid verification code. Try again.");
+                alert('Invalid code. Please try again.');
+                console.error(error);
             });
     }
 </script>
